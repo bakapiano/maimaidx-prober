@@ -200,15 +200,27 @@ const friendVSPageToRecordList = function (pageData) {
     },
   }).parseFromString(pageData);
 
-  ["dxscorevs", "achievementsvs"].forEach((pageType) => {
+  ["achievementsvs", "dxscorevs"].forEach((pageType) => {
     for (const label of labels) {
       const diff = labels.indexOf(label);
       const elements = xpath.select(
-        `//div[@class="music_${label}_score_back w_450 m_15 p_3 f_0"]`,
+        `//${pageType}//div[@class="music_${label}_score_back w_450 m_15 p_3 f_0"]`,
         doc
       );
       if (elements.length === 0) continue;
       const parseElement = (e, index) => {
+        const scoreString = e
+          .getElementsByTagName("tr")[0]
+          .getElementsByTagName("td")[2]
+          .textContent.replace(",", "")
+          .replace("%", "")
+          .trim();
+        if (scoreString === "―") return;
+        if (pageType === "dxscorevs") {
+          recordMap[label][index].dxScore = parseInt(scoreString);
+          return;
+        }
+        
         const result = {};
         result.title = e.getElementsByTagName("div")[2].textContent.trim();
         result.level = e.getElementsByTagName("div")[1].textContent.trim();
@@ -236,31 +248,20 @@ const friendVSPageToRecordList = function (pageData) {
           .getElementsByTagName("td")[1]
           .getElementsByTagName("img")[2];
           
-        (result.rate = rateNode.getAttribute("src").match("_icon_(.*).png")[1]),
-          (result.fc = fcNode
-            .getAttribute("src")
-            .match("_icon_(.*).png")[1]
-            .replace("back", ""));
+        result.rate = rateNode.getAttribute("src").match("_icon_(.*).png")[1];
+        result.achievements = parseFloat(scoreString);
+        result.dxScore = 0;
+        
+        result.fc = fcNode
+          .getAttribute("src")
+          .match("_icon_(.*).png")[1]
+          .replace("back", "");
         result.fs = fsNode
           .getAttribute("src")
           .match("_icon_(.*).png")[1]
           .replace("back", "");
 
-        const scoreString = e
-          .getElementsByTagName("tr")[0]
-          .getElementsByTagName("td")[2]
-          .textContent.replace(",", "")
-          .replace("%", "")
-          .trim();
-        if (scoreString === "―") return;
-
-        if (pageType === "dxscorevs") {
-          result.dxScore = parseInt(scoreString);
-          recordMap[label][index] = result;
-        } else {
-          result.achievements = parseFloat(scoreString);
-          recordMap[label][index].achievements = result.achievements;
-        }
+        recordMap[label][index] = result;
       };
 
       elements.forEach(parseElement);
@@ -360,3 +361,8 @@ app.post("/page", serve(pageToRecordList));
 app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`);
 });
+
+// Read C:\Users\Administrator\Desktop\data.html
+const data = fs.readFileSync("C:\\Users\\Administrator\\Desktop\\data.html", "utf8");
+const records = friendVSPageToRecordList(data);
+console.log(records.filter(x => x.title.indexOf("Oshama") != -1));
