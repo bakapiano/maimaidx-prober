@@ -361,8 +361,3 @@ app.post("/page", serve(pageToRecordList));
 app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`);
 });
-
-// Read C:\Users\Administrator\Desktop\data.html
-const data = fs.readFileSync("C:\\Users\\Administrator\\Desktop\\data.html", "utf8");
-const records = friendVSPageToRecordList(data);
-console.log(records.filter(x => x.title.indexOf("Oshama") != -1));
