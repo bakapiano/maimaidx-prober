@@ -202,17 +202,18 @@ const friendVSPageToRecordList = function (pageData) {
 
   ["dxscorevs", "achievementsvs"].forEach((pageType) => {
     for (const label of labels) {
+      const diff = labels.indexOf(label);
       const elements = xpath.select(
         `//div[@class="music_${label}_score_back w_450 m_15 p_3 f_0"]`,
         doc
       );
       if (elements.length === 0) continue;
-      const parseElement = (e) => {
+      const parseElement = (e, index) => {
         const result = {};
         result.title = e.getElementsByTagName("div")[2].textContent.trim();
         result.level = e.getElementsByTagName("div")[1].textContent.trim();
         result.type = "";
-        result.level_index = labels.indexOf(label);
+        result.level_index = diff;
         result.type = e
           .getElementsByTagName("img")[1]
           .getAttribute("src")
@@ -255,10 +256,10 @@ const friendVSPageToRecordList = function (pageData) {
 
         if (pageType === "dxscorevs") {
           result.dxScore = parseInt(scoreString);
-          recordMap[label][result.title] = result;
+          recordMap[label][index] = result;
         } else {
           result.achievements = parseFloat(scoreString);
-          recordMap[label][result.title].achievements = result.achievements;
+          recordMap[label][index].achievements = result.achievements;
         }
       };
 
