@@ -224,6 +224,7 @@ const friendVSPageToRecordList = function (pageData) {
 
   ["achievementsvs", "dxscorevs"].forEach((pageType) => {
     for (const label of labels) {
+      let link_firstTime = true
       const diff = labels.indexOf(label);
       const elements = xpath.select(
         `//${pageType}//div[@class="music_${label}_score_back w_450 m_15 p_3 f_0"]`,
@@ -282,7 +283,12 @@ const friendVSPageToRecordList = function (pageData) {
           .getAttribute("src")
           .match("_icon_(.*).png")[1]
           .replace("back", "");
-
+          
+        if (result.title == "Link" && link_firstTime) {
+          link_firstTime = false
+          result.title = "Link(CoF)";
+        }
+          
         recordMap[label][index] = result;
       };
 
